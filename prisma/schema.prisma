@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id                  String        @id @default(cuid())
+  name                String
+  email               String        @unique
+  city                String?
+  dietaryRestrictions String        @default("[]")
+  createdAt           DateTime      @default(now())
+  events              EventMember[]
+  purchases           Purchase[]
+}
+
+model Event {
+  id           String         @id @default(cuid())
+  name         String
+  hostId       String
+  location     String?
+  date         DateTime?
+  status       String         @default("DRAFT")
+  dietaryNotes String?
+  createdAt    DateTime       @default(now())
+  members      EventMember[]
+  dateOptions  DateOption[]
+  shoppingList ShoppingItem[]
+  purchases    Purchase[]
+}
+
+model EventMember {
+  id             String     @id @default(cuid())
+  userId         String
+  eventId        String
+  role           String     @default("GUEST")
+  status         String     @default("PENDING")
+  user           User       @relation(fields: [userId], references: [id])
+  event          Event      @relation(fields: [eventId], references: [id])
+  availableDates DateVote[]
+}
+
+model DateOption {
+  id      String     @id @default(cuid())
+  eventId String
+  date    DateTime
+  event   Event      @relation(fields: [eventId], references: [id])
+  votes   DateVote[]
+}
+
+model DateVote {
+  id           String      @id @default(cuid())
+  memberId     String
+  dateOptionId String
+  available    Boolean
+  member       EventMember @relation(fields: [memberId], references: [id])
+  dateOption   DateOption  @relation(fields: [dateOptionId], references: [id])
+}
+
+model ShoppingItem {
+  id           String  @id @default(cuid())
+  eventId      String
+  name         String
+  quantity     String
+  price        Float?
+  category     String
+  isVegan      Boolean @default(false)
+  isGlutenFree Boolean @default(false)
+  event        Event   @relation(fields: [eventId], references: [id])
+}
+
+model Purchase {
+  id      String  @id @default(cuid())
+  eventId String
+  userId  String
+  amount  Float
+  note    String?
+  user    User    @relation(fields: [userId], references: [id])
+  event   Event   @relation(fields: [eventId], references: [id])
+}

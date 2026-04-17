@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# El Encuentro
 
-## Getting Started
+Herramienta para coordinar asados y reuniones sociales eliminando la fricción logística: fechas, lugar, compras y gastos.
 
-First, run the development server:
+## Requisitos
+
+- Node.js 18+
+- npm
+
+## Setup
 
 ```bash
+# 1. Instalar dependencias
+npm install
+
+# 2. Crear la base de datos y aplicar el schema
+npx prisma db push
+
+# 3. Poblar con datos del grupo de Juan (92 días sin asado)
+npm run seed
+
+# 4. Iniciar el servidor de desarrollo
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abrí [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Usuarios demo
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Podés iniciar sesión con cualquiera de estos emails (sin contraseña):
 
-## Learn More
+| Email                        | Nombre      | Ciudad       | Restricciones |
+|------------------------------|-------------|--------------|---------------|
+| `juan@encuentro.app`         | Juan        | Berazategui  | —             |
+| `mariano@encuentro.app`      | Mariano     | San Isidro   | —             |
+| `nicolas.r@encuentro.app`    | Nicolás R.  | Recoleta     | Vegano        |
+| `rafael@encuentro.app`       | Rafael      | Córdoba      | —             |
+| `diego@encuentro.app`        | Diego       | Banfield     | —             |
+| `blas@encuentro.app`         | Blas        | Villa Crespo | —             |
+| `nicolas.f@encuentro.app`    | Nicolás F.  | La Plata     | —             |
 
-To learn more about Next.js, take a look at the following resources:
+## Flujo principal
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Dashboard** → trigger emocional "Han pasado N días desde tu último asado"
+2. **Nuevo asado** → wizard 4 pasos: nombre/lugar → invitados → fechas → restricciones
+3. **Votación de fechas** → accesible sin login en `/vote/[id]`
+4. **Lista de compras** → generada automáticamente según el grupo (veganos, celíacos)
+5. **Split de gastos** → registrá lo que gastó cada uno, la app calcula quién debe a quién
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Variables de entorno
 
-## Deploy on Vercel
+El archivo `.env` ya está configurado para desarrollo local:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+DATABASE_URL="file:./dev.db"
+AUTH_SECRET="el-encuentro-secret-2025"
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Stack
+
+- **Next.js 16** (App Router, params/searchParams como Promises)
+- **Prisma 7** + SQLite via better-sqlite3 adapter
+- **NextAuth v5** beta (Credentials provider — magic link demo)
+- **Tailwind CSS v4** + shadcn/ui
+- **date-fns v4** · **SWR** · **Zustand**
+- Sistema de diseño "Thermal Memory" (#1D9E75 teal, fondo #12191A)
+
+## Scripts
+
+```bash
+npm run dev          # Desarrollo en localhost:3000
+npm run build        # Build de producción
+npm run seed         # Re-poblar la base de datos
+npx prisma studio    # GUI para explorar la BD
+```
