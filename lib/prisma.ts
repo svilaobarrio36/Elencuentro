@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -6,21 +7,16 @@ declare global {
 }
 
 function createPrismaClient(): PrismaClient {
-  // Producción / Vercel → Turso (libSQL puro, sin addons nativos)
+  // Producción / Vercel → Turso (libSQL)
   if (process.env.TURSO_DATABASE_URL) {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { PrismaLibSQL } = require("@prisma/adapter-libsql");
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { createClient } = require("@libsql/client");
-    const turso = createClient({
+    const adapter = new PrismaLibSql({
       url: process.env.TURSO_DATABASE_URL,
       authToken: process.env.TURSO_AUTH_TOKEN ?? "",
     });
-    const adapter = new PrismaLibSQL(turso);
     return new PrismaClient({ adapter } as any);
   }
 
-  // Desarrollo local → SQLite con better-sqlite3 (excluido del bundle por serverExternalPackages)
+  // Desarrollo local → SQLite con better-sqlite3
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { PrismaBetterSqlite3 } = require("@prisma/adapter-better-sqlite3");
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -30,5 +26,13 @@ function createPrismaClient(): PrismaClient {
   return new PrismaClient({ adapter } as any);
 }
 
-export const prisma: PrismaClient =
-  globalThis.__prisma ?? (globalThis.__prisma = createPrismaClient());
+function getClient(): PrismaClient {
+  return globalThis.__prisma ?? (globalThis.__prisma = createPrismaClient());
+}
+
+// Lazy proxy: createPrismaClient() only runs on first property access (request time, not module eval time)
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_, prop: string | symbol) {
+    return (getClient() as any)[prop as string];
+  },
+});
