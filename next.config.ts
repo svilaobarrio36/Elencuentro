@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   // Excluye better-sqlite3 del bundle — solo se usa en dev local, nunca en Vercel
   serverExternalPackages: [
+    "@prisma/client",
     "better-sqlite3",
     "@prisma/adapter-better-sqlite3",
     "@prisma/adapter-libsql",

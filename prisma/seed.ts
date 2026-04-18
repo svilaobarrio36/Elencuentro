@@ -1,4 +1,4 @@
-import { PrismaClient } from "../lib/generated/prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { subDays, addDays } from "date-fns";
 
 function createClient() {
